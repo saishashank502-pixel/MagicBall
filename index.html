@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Magic 8 Ball — Ultra Web Edition with Logic</title>
+<style>
+    body {
+        background: #111;
+        color: white;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        padding-top: 40px;
+    }
+
+    .ball-container {
+        width: 350px;
+        height: 350px;
+        margin: auto;
+        position: relative;
+    }
+
+    .ball {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 30% 30%, #444, #000 70%);
+        border-radius: 50%;
+        position: relative;
+        box-shadow: 0 0 30px rgba(0,255,255,0.3);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .ball.neon {
+        box-shadow: 0 0 40px cyan;
+    }
+
+    .triangle-window {
+        position: absolute;
+        top: 110px;
+        left: 95px;
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle, #002244, #000);
+        clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        border: 3px solid cyan;
+        transition: border 0.2s ease;
+    }
+
+    #answer {
+        position: absolute;
+        width: 110px;
+        top: 165px;
+        left: 125px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: #39aaff;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+    }
+
+    .emblem {
+        position: absolute;
+        top: 50px;
+        left: 130px;
+        width: 90px;
+        height: 90px;
+        background: white;
+        border-radius: 50%;
+        border: 3px solid #aaa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 48px;
+        font-weight: bold;
+        color: black;
+    }
+
+    .controls {
+        margin-top: 25px;
+    }
+
+    .controls input {
+        padding: 10px;
+        font-size: 16px;
+        width: 250px;
+        border-radius: 5px;
+        border: none;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-left: 10px;
+        cursor: pointer;
+        border-radius: 6px;
+        border: none;
+    }
+
+    button:hover {
+        background: #333;
+        color: cyan;
+    }
+
+    select {
+        margin-left: 10px;
+        padding: 7px;
+        font-size: 16px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Magic 8 Ball — Ultra Web Edition with Logic</h1>
+
+<div class="ball-container">
+    <div class="ball" id="ball">
+        <div class="emblem">8</div>
+        <div class="triangle-window" id="triangle"></div>
+        <div id="answer">Ask a question...</div>
+    </div>
+</div>
+
+<div class="controls">
+    <input id="question" type="text" placeholder="Type your question..." />
+    <button onclick="shake()">Shake</button>
+    <button onclick="resetBall()">Reset</button>
+    <select id="theme" onchange="changeTheme(this.value)">
+        <option>Neon</option>
+        <option>Sith</option>
+        <option>Ocean</option>
+        <option>Vaporwave</option>
+    </select>
+</div>
+
+<script>
+    const answers = [
+        "It is certain",
+        "Without a doubt",
+        "Yes — definitely",
+        "Most likely",
+        "Outlook good",
+        "Yes",
+        "Reply hazy — try again",
+        "Ask again later",
+        "Cannot predict now",
+        "Try again",
+        "My reply is no",
+        "Outlook not so good",
+        "Very doubtful"
+    ];
+
+    const triangle = document.getElementById("triangle");
+    const answerText = document.getElementById("answer");
+    const ball = document.getElementById("ball");
+
+    function shake() {
+        const q = document.getElementById("question").value.trim().toLowerCase();
+        if (q === "") {
+            answerText.textContent = "Ask something first!";
+            answerText.style.opacity = 1;
+            return;
+        }
+
+        // Shake animation
+        ball.animate([
+            { transform: "translateX(0px)" },
+            { transform: "translateX(-10px)" },
+            { transform: "translateX(10px)" },
+            { transform: "translateX(0px)" }
+        ], {
+            duration: 400,
+            iterations: 2,
+            easing: "ease-in-out"
+        });
+
+        // Liquid wobble
+        triangle.animate([
+            { transform: "translateY(0px)" },
+            { transform: "translateY(4px)" },
+            { transform: "translateY(-4px)" },
+            { transform: "translateY(0px)" }
+        ], { duration: 600, easing: "ease-out" });
+
+        // --- LOGICAL THINKING ---
+        const positive = ["It is certain","Without a doubt","Yes — definitely","Most likely","Outlook good","Yes"];
+        const negative = ["My reply is no","Very doubtful","Outlook not so good"];
+        const uncertain = ["Reply hazy — try again","Ask again later","Cannot predict now","Try again"];
+
+        let ans;
+        if (q.includes("will") || q.includes("can") || q.includes("is")) {
+            const r = Math.random();
+            if (r < 0.5) ans = positive[Math.floor(Math.random()*positive.length)];
+            else if (r < 0.8) ans = uncertain[Math.floor(Math.random()*uncertain.length)];
+            else ans = negative[Math.floor(Math.random()*negative.length)];
+        } else if (q.includes("who") || q.includes("what") || q.includes("where") || q.includes("how")) {
+            ans = uncertain[Math.floor(Math.random()*uncertain.length)];
+        } else {
+            ans = answers[Math.floor(Math.random()*answers.length)];
+        }
+
+        // Fade in answer
+        answerText.style.opacity = 0;
+        setTimeout(() => {
+            answerText.textContent = ans;
+            answerText.style.opacity = 1;
+        }, 600);
+    }
+
+    function resetBall() {
+        answerText.textContent = "Ask a question...";
+        answerText.style.opacity = 1;
+        document.getElementById("question").value = "";
+    }
+
+    function changeTheme(theme) {
+        const themes = {
+            Neon: { glow: "cyan", txt: "#39aaff", fill: "#002244" },
+            Sith: { glow: "red", txt: "#ff4040", fill: "black" },
+            Ocean: { glow: "#2ee6ff", txt: "#41f0ff", fill: "#001a33" },
+            Vaporwave: { glow: "#ff42ff", txt: "#ff86ff", fill: "#330045" }
+        };
+
+        triangle.style.borderColor = themes[theme].glow;
+        triangle.style.background = `radial-gradient(circle, ${themes[theme].fill}, black)`;
+        answerText.style.color = themes[theme].txt;
+        ball.style.boxShadow = `0 0 40px ${themes[theme].glow}`;
+    }
+
+    // ENTER key triggers shake
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") shake();
+    });
+</script>
+
+</body>
+</html>
